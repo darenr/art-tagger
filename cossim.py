@@ -12,7 +12,13 @@ from nltk.stem.snowball import SnowballStemmer
 from collections import defaultdict
 
 #stemmer = nltk.stem.porter.PorterStemmer()
-stemmer = SnowballStemmer("english")
+#stemmer = SnowballStemmer("english")
+
+class NoStemmer():
+  def stem(self, t):
+    return t
+
+stemmer = NoStemmer()
 
 remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
 
