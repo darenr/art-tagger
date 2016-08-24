@@ -8,6 +8,7 @@ import re
 import json
 import time
 import sys
+from textblob import TextBlob
 
 urllib3.disable_warnings()
 
@@ -88,22 +89,24 @@ def load_data(es, filename="data/genes.json"):
         id = row['ID']
         gene = row['name']
         normalized_type = row['normalized_type']
-        if normalized_type in ["Broad Category", "Broad Medium", "Content: People and Figures/Portraits/Social Life"]:
-          continue
-        tags, definition = pre_process_definition(row['Definition'])
-        try:
-            r = es.index(index=index, doc_type=doc_type, id=id, body={
-              "gene": gene,
-              "tags": tags,
-              "normalized_type": normalized_type,
-              "definition": definition
-            })
-        except KeyboardInterrupt:
-            raise
-        except Exception, e:
-            print artists, text
-            print 'Failed', e
-            sys.exit(0)
+        if normalized_type in ["Style or Movement ", "Concept", "Photography/Film Technique"]:
+          tags, text = pre_process_definition(row['Definition'])
+          blob = TextBlob(text)
+          definition = ', '.join(blob.noun_phrases)
+
+          try:
+              r = es.index(index=index, doc_type=doc_type, id=id, body={
+                "gene": gene,
+                "tags": tags,
+                "normalized_type": normalized_type,
+                "definition": definition
+              })
+          except KeyboardInterrupt:
+              raise
+          except Exception, e:
+              print artists, text
+              print 'Failed', e
+              sys.exit(0)
 
     # let the index catch up
     time.sleep(5)
